@@ -15,7 +15,6 @@ public class HUDScript : MonoBehaviour
 {
     public bool hasGenerateBeenPressed = false;
     public bool hasResetBeenPressed = false;
-    public Slider rotation;
     public Text warning;
 
     [SerializeField] private LSystemsGenerator TreeSpawner;
@@ -47,7 +46,6 @@ public class HUDScript : MonoBehaviour
         spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
         spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
 
-        rotation.gameObject.SetActive(false);
         warning.gameObject.SetActive(false);
     }
 
@@ -210,10 +208,6 @@ public void SpawnAreaYDown()
         hasResetBeenPressed = true;
     }
 
-    public void RotateTree()
-    {
-        TreeSpawner.Tree.transform.rotation = Quaternion.Euler(0, rotation.value, 0);
-    }
 
     public void TitleInputOVC()
     {

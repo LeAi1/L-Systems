@@ -92,16 +92,6 @@ public class LSystemsGenerator : MonoBehaviour
 
         if (titleLastFrame != title)
         {
-            if (title >= 6)
-            {
-                HUD.rotation.gameObject.SetActive(true);
-            }
-            else
-            {
-                HUD.rotation.value = 0;
-                HUD.rotation.gameObject.SetActive(false);
-            }
-
             switch (title)
             {
                 case 1:
@@ -178,11 +168,16 @@ public class LSystemsGenerator : MonoBehaviour
     {
         List<Vector2> positions = PoissonDiscSampling.GeneratePoints(spawnRadius, spawnAreaSize);
 
+        Vector3 center = Camera.main.transform.position + Camera.main.transform.forward * (spawnAreaSize.y / 2f);
+
+        center.y = 0f; // Optional: keep trees on the ground
+
         for (int i = 0; i < Mathf.Min(numberOfTrees, positions.Count); i++)
         {
             GameObject singleTree = GenerateSingleTree();
             singleTree.transform.SetParent(Tree.transform);
-            singleTree.transform.position = new Vector3(positions[i].x, 0, positions[i].y);
+            Vector2 pos = positions[i] - spawnAreaSize / 2f; // center Poisson field around (0,0)
+            singleTree.transform.position = center + new Vector3(pos.x, 0, pos.y);
         }
         } else {
         GameObject singleTree = GenerateSingleTree();
