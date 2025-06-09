@@ -31,6 +31,11 @@ public class LSystemsGenerator : MonoBehaviour
     [SerializeField] private GameObject leaf;
     [SerializeField] private HUDScript HUD;
 
+    [SerializeField] private bool generateMultipleTrees = true;
+    [SerializeField] public int numberOfTrees = 10;
+    [SerializeField] public float spawnRadius = 5f;
+    [SerializeField] public Vector2 spawnAreaSize = new Vector2(20, 20);
+
     private const string axiom = "X";
 
     private Dictionary<char, string> rules;
@@ -164,85 +169,99 @@ public class LSystemsGenerator : MonoBehaviour
 
     }
 
-    private void Generate()
+    private void Generate(){
+
+    if (Tree != null) Destroy(Tree);
+    Tree = new GameObject("TreeContainer");
+
+    if (generateMultipleTrees)
     {
-        Destroy(Tree);
+        List<Vector2> positions = PoissonDiscSampling.GeneratePoints(spawnRadius, spawnAreaSize);
 
-        Tree = Instantiate(treeParent);
-
-        currentString = axiom;
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < iterations; i++)
+        for (int i = 0; i < Mathf.Min(numberOfTrees, positions.Count); i++)
         {
-            foreach (char c in currentString)
-            {
-                sb.Append(rules.ContainsKey(c) ? rules[c] : c.ToString());
-            }
-
-            currentString = sb.ToString();
-            sb = new StringBuilder();
+            GameObject singleTree = GenerateSingleTree();
+            singleTree.transform.SetParent(Tree.transform);
+            singleTree.transform.position = new Vector3(positions[i].x, 0, positions[i].y);
         }
-
-        Debug.Log(currentString);
-        
-        for (int i = 0; i < currentString.Length; i++)
-        {
-            switch (currentString[i])
-            {
-                case 'F':                    
-                    initialPosition = transform.position;
-                    transform.Translate(Vector3.up * 2 * length);                    
-
-                    GameObject fLine = currentString[(i + 1) % currentString.Length] == 'X' || currentString[(i + 3) % currentString.Length] == 'F' && currentString[(i + 4) % currentString.Length] == 'X' ? Instantiate(leaf) : Instantiate(branch);
-                    fLine.transform.SetParent(Tree.transform);
-                    fLine.GetComponent<LineRenderer>().SetPosition(0, initialPosition);
-                    fLine.GetComponent<LineRenderer>().SetPosition(1, transform.position);
-                    fLine.GetComponent<LineRenderer>().startWidth = width;
-                    fLine.GetComponent<LineRenderer>().endWidth = width;
-                    break;
-
-                case 'X':                
-                    break;
-
-                case '+':
-                    transform.Rotate(Vector3.back * angle * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
-                    break;
-
-                case '-':                                      
-                    transform.Rotate(Vector3.forward * angle * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
-                    break;
-
-                case '*':
-                    transform.Rotate(Vector3.up * 120 * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
-                    break;
-
-                case '/':
-                    transform.Rotate(Vector3.down* 120 * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
-                    break;
-
-                case '[':
-                    transformStack.Push(new TransformInfo()
-                    {
-                        position = transform.position,
-                        rotation = transform.rotation
-                    });
-                    break;
-
-                case ']':
-                    TransformInfo ti = transformStack.Pop();
-                    transform.position = ti.position;
-                    transform.rotation = ti.rotation;
-                    break;
-
-                default:
-                    throw new InvalidOperationException("Invalid L-tree operation");
-            }
-        }
-
-        Tree.transform.rotation = Quaternion.Euler(0, HUD.rotation.value, 0);
+        } else {
+        GameObject singleTree = GenerateSingleTree();
+        singleTree.transform.SetParent(Tree.transform);
+        singleTree.transform.position = Vector3.zero;
     }
+
+    }
+
+    private GameObject GenerateSingleTree()
+{
+    GameObject newTree = Instantiate(treeParent);
+    transform.position = Vector3.zero;
+    transform.rotation = Quaternion.identity;
+
+    string generatedString = axiom;
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < iterations; i++)
+    {
+        foreach (char c in generatedString)
+        {
+            sb.Append(rules.ContainsKey(c) ? rules[c] : c.ToString());
+        }
+        generatedString = sb.ToString();
+        sb = new StringBuilder();
+    }
+
+    Stack<TransformInfo> stack = new Stack<TransformInfo>();
+
+    for (int i = 0; i < generatedString.Length; i++)
+    {
+        switch (generatedString[i])
+        {
+            case 'F':
+                Vector3 initPos = transform.position;
+                transform.Translate(Vector3.up * 2 * length);
+                GameObject segment = generatedString[(i + 1) % generatedString.Length] == 'X' ? Instantiate(leaf) : Instantiate(branch);
+                segment.transform.SetParent(newTree.transform);
+                LineRenderer lr = segment.GetComponent<LineRenderer>();
+                lr.SetPosition(0, initPos);
+                lr.SetPosition(1, transform.position);
+                lr.startWidth = width;
+                lr.endWidth = width;
+                break;
+
+            case 'X': break;
+
+            case '+':
+                transform.Rotate(Vector3.back * angle * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
+                break;
+
+            case '-':
+                transform.Rotate(Vector3.forward * angle * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
+                break;
+
+            case '*':
+                transform.Rotate(Vector3.up * 120 * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
+                break;
+
+            case '/':
+                transform.Rotate(Vector3.down * 120 * (1 + variance / 100 * randomRotationValues[i % randomRotationValues.Length]));
+                break;
+
+            case '[':
+                stack.Push(new TransformInfo { position = transform.position, rotation = transform.rotation });
+                break;
+
+            case ']':
+                TransformInfo ti = stack.Pop();
+                transform.position = ti.position;
+                transform.rotation = ti.rotation;
+                break;
+        }
+    }
+
+    return newTree;
+}
+
 
     private void SelectTreeOne()
     {

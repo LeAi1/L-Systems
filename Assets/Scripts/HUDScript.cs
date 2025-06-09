@@ -26,10 +26,15 @@ public class HUDScript : MonoBehaviour
     [SerializeField] private InputField width;
     [SerializeField] private InputField variance;
 
+    [SerializeField] private InputField numberOfTreesInput;
+    [SerializeField] private InputField spawnRadiusInput;
+    [SerializeField] private InputField spawnAreaXInput;
+    [SerializeField] private InputField spawnAreaYInput;
+
     private int tempInt;
     private float tempFloat;
 
-	public void Start ()
+    public void Start()
     {
         title.text = TreeSpawner.title.ToString();
         iterations.text = TreeSpawner.iterations.ToString();
@@ -37,6 +42,10 @@ public class HUDScript : MonoBehaviour
         length.text = TreeSpawner.length.ToString("F1");
         width.text = TreeSpawner.width.ToString("F1");
         variance.text = TreeSpawner.variance.ToString() + "%";
+        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
+        spawnRadiusInput.text = TreeSpawner.spawnRadius.ToString("F1");
+        spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
+        spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
 
         rotation.gameObject.SetActive(false);
         warning.gameObject.SetActive(false);
@@ -79,7 +88,7 @@ public class HUDScript : MonoBehaviour
     }
 
     public void AngleUp()
-    {        
+    {
         TreeSpawner.angle++;
         angle.text = TreeSpawner.angle.ToString() + "°";
     }
@@ -131,6 +140,66 @@ public class HUDScript : MonoBehaviour
         }
     }
 
+    public void NumberOfTreesUp()
+{
+    if (TreeSpawner.numberOfTrees < 100)
+    {
+        TreeSpawner.numberOfTrees++;
+        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
+    }
+}
+    public void NumberOfTreesDown()
+    {
+        if (TreeSpawner.numberOfTrees > 1)
+        {
+            TreeSpawner.numberOfTrees--;
+            numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
+        }
+    }
+
+    public void SpawnRadiusUp()
+{
+    TreeSpawner.spawnRadius += 0.1f;
+    spawnRadiusInput.text = TreeSpawner.spawnRadius.ToString("F1");
+}
+public void SpawnRadiusDown()
+{
+    if (TreeSpawner.spawnRadius > 0.1f)
+    {
+        TreeSpawner.spawnRadius -= 0.1f;
+        spawnRadiusInput.text = TreeSpawner.spawnRadius.ToString("F1");
+    }
+}
+
+    public void SpawnAreaXUp()
+{
+    TreeSpawner.spawnAreaSize.x += 1f;
+    spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
+}
+public void SpawnAreaXDown()
+{
+    if (TreeSpawner.spawnAreaSize.x > 1f)
+    {
+        TreeSpawner.spawnAreaSize.x -= 1f;
+        spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
+    }
+}
+
+    public void SpawnAreaYUp()
+{
+    TreeSpawner.spawnAreaSize.y += 1f;
+    spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
+}
+public void SpawnAreaYDown()
+{
+    if (TreeSpawner.spawnAreaSize.y > 1f)
+    {
+        TreeSpawner.spawnAreaSize.y -= 1f;
+        spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
+    }
+}
+
+
     public void GenerateNew()
     {
         hasGenerateBeenPressed = true;
@@ -138,7 +207,7 @@ public class HUDScript : MonoBehaviour
 
     public void ResetValues()
     {
-        hasResetBeenPressed = true;        
+        hasResetBeenPressed = true;
     }
 
     public void RotateTree()
@@ -219,4 +288,55 @@ public class HUDScript : MonoBehaviour
     {
         variance.text = TreeSpawner.variance.ToString() + "%";
     }
+
+    public void NumberOfTreesInputOVC()
+    {
+        if (int.TryParse(numberOfTreesInput.text, out tempInt))
+        {
+            TreeSpawner.numberOfTrees = Mathf.Clamp(tempInt, 1, 100);
+        }
+    }
+    public void NumberOfTreesInputOEE()
+    {
+        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
+    }
+
+    public void SpawnRadiusInputOVC()
+    {
+        if (float.TryParse(spawnRadiusInput.text, out tempFloat))
+        {
+            TreeSpawner.spawnRadius = Mathf.Max(0.1f, tempFloat);
+        }
+    }
+    public void SpawnRadiusInputOEE()
+    {
+        spawnRadiusInput.text = TreeSpawner.spawnRadius.ToString("F1");
+    }
+
+    public void SpawnAreaXInputOVC()
+    {
+        if (float.TryParse(spawnAreaXInput.text, out tempFloat))
+        {
+            TreeSpawner.spawnAreaSize.x = Mathf.Max(1f, tempFloat);
+        }
+    }
+    public void SpawnAreaXInputOEE()
+    {
+        spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
+    }
+
+public void SpawnAreaYInputOVC()
+{
+    if (float.TryParse(spawnAreaYInput.text, out tempFloat))
+    {
+        TreeSpawner.spawnAreaSize.y = Mathf.Max(1f, tempFloat);
+    }
+}
+public void SpawnAreaYInputOEE()
+{
+    spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
+}
+
+
+
 }
