@@ -25,7 +25,6 @@ public class HUDScript : MonoBehaviour
     [SerializeField] private InputField width;
     [SerializeField] private InputField variance;
 
-    [SerializeField] private InputField numberOfTreesInput;
     [SerializeField] private InputField spawnRadiusInput;
     [SerializeField] private InputField spawnAreaXInput;
     [SerializeField] private InputField spawnAreaYInput;
@@ -41,7 +40,6 @@ public class HUDScript : MonoBehaviour
         length.text = TreeSpawner.length.ToString("F1");
         width.text = TreeSpawner.width.ToString("F1");
         variance.text = TreeSpawner.variance.ToString() + "%";
-        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
         spawnRadiusInput.text = TreeSpawner.spawnRadius.ToString("F1");
         spawnAreaXInput.text = TreeSpawner.spawnAreaSize.x.ToString("F1");
         spawnAreaYInput.text = TreeSpawner.spawnAreaSize.y.ToString("F1");
@@ -135,23 +133,6 @@ public class HUDScript : MonoBehaviour
         {
             TreeSpawner.variance--;
             variance.text = TreeSpawner.variance.ToString() + "%";
-        }
-    }
-
-    public void NumberOfTreesUp()
-{
-    if (TreeSpawner.numberOfTrees < 100)
-    {
-        TreeSpawner.numberOfTrees++;
-        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
-    }
-}
-    public void NumberOfTreesDown()
-    {
-        if (TreeSpawner.numberOfTrees > 1)
-        {
-            TreeSpawner.numberOfTrees--;
-            numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
         }
     }
 
@@ -281,18 +262,6 @@ public void SpawnAreaYDown()
     public void VarianceInputOEE()
     {
         variance.text = TreeSpawner.variance.ToString() + "%";
-    }
-
-    public void NumberOfTreesInputOVC()
-    {
-        if (int.TryParse(numberOfTreesInput.text, out tempInt))
-        {
-            TreeSpawner.numberOfTrees = Mathf.Clamp(tempInt, 1, 100);
-        }
-    }
-    public void NumberOfTreesInputOEE()
-    {
-        numberOfTreesInput.text = TreeSpawner.numberOfTrees.ToString();
     }
 
     public void SpawnRadiusInputOVC()

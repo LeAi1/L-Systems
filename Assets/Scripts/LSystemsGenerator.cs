@@ -32,7 +32,6 @@ public class LSystemsGenerator : MonoBehaviour
     [SerializeField] private HUDScript HUD;
 
     [SerializeField] private bool generateMultipleTrees = true;
-    [SerializeField] public int numberOfTrees = 10;
     [SerializeField] public float spawnRadius = 5f;
     [SerializeField] public Vector2 spawnAreaSize = new Vector2(20, 20);
 
@@ -158,37 +157,104 @@ public class LSystemsGenerator : MonoBehaviour
         }
 
     }
+    
+    private Dictionary<char, string> GetRandomRuleset()
+{
+    int randomType = UnityEngine.Random.Range(1, NUM_OF_TREES + 1);
 
-    private void Generate(){
-
-    if (Tree != null) Destroy(Tree);
-    Tree = new GameObject("TreeContainer");
-
-    if (generateMultipleTrees)
+    switch (randomType)
     {
-        List<Vector2> positions = PoissonDiscSampling.GeneratePoints(spawnRadius, spawnAreaSize);
+        case 1:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[F-[X+X]+F[+FX]-X]" },
+                { 'F', "FF" }
+            };
+        case 2:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[-FX][+FX][FX]" },
+                { 'F', "FF" }
+            };
+        case 3:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[-FX]X[+FX][+F-FX]" },
+                { 'F', "FF" }
+            };
+        case 4:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[FF[+XF-F+FX]--F+F-FX]" },
+                { 'F', "FF" }
+            };
+        case 5:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[FX[+F[-FX]FX][-F-FXFX]]" },
+                { 'F', "FF" }
+            };
+        case 6:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[F[+FX][*+FX][/+FX]]" },
+                { 'F', "FF" }
+            };
+        case 7:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[*+FX]X[+FX][/+F-FX]" },
+                { 'F', "FF" }
+            };
+        case 8:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[F[-X+F[+FX]][*-X+F[+FX]][/-X+F[+FX]-X]]" },
+                { 'F', "FF" }
+            };
+        default:
+            return new Dictionary<char, string>
+            {
+                { 'X', "[F-[X+X]+F[+FX]-X]" },
+                { 'F', "FF" }
+            };
+    }
+}
 
-        Vector3 center = Camera.main.transform.position + Camera.main.transform.forward * (spawnAreaSize.y / 2f);
 
-        center.y = 0f; // Optional: keep trees on the ground
+    private void Generate()
+    {
 
-        for (int i = 0; i < Mathf.Min(numberOfTrees, positions.Count); i++)
+        if (Tree != null) Destroy(Tree);
+        Tree = new GameObject("TreeContainer");
+
+        if (generateMultipleTrees)
+        {
+            List<Vector2> positions = PoissonDiscSampling.GeneratePoints(spawnRadius, spawnAreaSize);
+
+            Vector3 center = Vector3.zero;
+            center.y = 0f;
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                GameObject singleTree = GenerateSingleTree();
+                singleTree.transform.SetParent(Tree.transform);
+                Vector2 pos = positions[i] - spawnAreaSize / 2f; // center Poisson field around (0,0)
+                singleTree.transform.position = center + new Vector3(pos.x, 0, pos.y);
+            }
+        }
+        else
         {
             GameObject singleTree = GenerateSingleTree();
             singleTree.transform.SetParent(Tree.transform);
-            Vector2 pos = positions[i] - spawnAreaSize / 2f; // center Poisson field around (0,0)
-            singleTree.transform.position = center + new Vector3(pos.x, 0, pos.y);
+            singleTree.transform.position = Vector3.zero;
         }
-        } else {
-        GameObject singleTree = GenerateSingleTree();
-        singleTree.transform.SetParent(Tree.transform);
-        singleTree.transform.position = Vector3.zero;
-    }
 
     }
 
     private GameObject GenerateSingleTree()
 {
+    Dictionary<char, string> localRules = GetRandomRuleset();
     GameObject newTree = Instantiate(treeParent);
     transform.position = Vector3.zero;
     transform.rotation = Quaternion.identity;
@@ -200,7 +266,7 @@ public class LSystemsGenerator : MonoBehaviour
     {
         foreach (char c in generatedString)
         {
-            sb.Append(rules.ContainsKey(c) ? rules[c] : c.ToString());
+        sb.Append(localRules.ContainsKey(c) ? localRules[c] : c.ToString());
         }
         generatedString = sb.ToString();
         sb = new StringBuilder();
